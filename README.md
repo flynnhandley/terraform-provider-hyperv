@@ -1,8 +1,9 @@
-Terraform Provider for Microsoft Hyper-V
-==================
 
 
 <img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" width="600px">
+
+Terraform Provider for Microsoft Hyper-V
+==================
 
 Requirements
 ------------
