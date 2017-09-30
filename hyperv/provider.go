@@ -36,7 +36,9 @@ func Provider() terraform.ResourceProvider {
 			"hyperv_virtual_machine": resourceHypervVM(),
 			"hyperv_virtual_switch":  resourceHypervVirtualSwitch(),
 		},
-
+		DataSourcesMap: map[string]*schema.Resource{
+			"hyperv_virtual_machine_ip": dataSourceHypervVirtualMachineIP(),
+		},
 		ConfigureFunc: providerConfigure,
 	}
 }

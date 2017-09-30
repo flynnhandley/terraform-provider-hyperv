@@ -43,8 +43,10 @@ type Driver interface {
 	// Creates a VHDX in the VM's configuration directoy and attaches to the VM
 	NewVhd(string, string, int64) (string, error)
 
-	// Downloads a VHD from a http endpoint and attaches to a VM (todo: find alternative to System.Net.WebClient)
-	AttachBootVHD(string, string) (string, error)
+	NewDiskFromImagePath(string, string, string) (string, error)
+
+	NewDifferencingDisk(string, string, string) (string, error)
+	NewDiskFromImageURL(string, string, string) (string, error)
 
 	// Verify checks to make sure that this driver should function
 	// properly. If there is any indication the driver can't function,
@@ -53,6 +55,8 @@ type Driver interface {
 
 	// Finds the MAC address of the NIC nic0
 	Mac(string) (string, error)
+
+	SetVirtualMachineRemoveNetworkBoot(string) error
 
 	// Finds the IP address of a VM connected that uses DHCP by its MAC address
 	IpAddress(string) (string, error)

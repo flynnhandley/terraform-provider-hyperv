@@ -24,15 +24,15 @@ func resourceHypervVM() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"switch_name": {
+			"switch": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 
-			"boot_vhd_uri": {
+			"path": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+				Default:  "C:\\HyperV",
 			},
 
 			"cpu": {
@@ -53,17 +53,6 @@ func resourceHypervVM() *schema.Resource {
 				Default:  2048,
 			},
 
-			"disk_path": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "C:\\hyperv",
-			},
-
-			"disable_secure_boot": {
-				Type:     schema.TypeBool,
-				Optional: true,
-			},
-
 			"vlan_id": {
 				Type:     schema.TypeInt,
 				Optional: true,
@@ -79,7 +68,7 @@ func resourceHypervVM() *schema.Resource {
 				Default:  false,
 			},
 
-			"storage_data_disk": {
+			"storage_disk": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
@@ -89,20 +78,32 @@ func resourceHypervVM() *schema.Resource {
 							Type:     schema.TypeString,
 							Required: true,
 						},
+						"image_path": {
+							Type:     schema.TypeString,
+							Optional: true,
+							ConflictsWith: []string{"storage_disk.image_url",
+								"storage_disk.diff_parent_path",
+								"storage_disk.size"},
+						},
+						"image_url": {
+							Type:     schema.TypeString,
+							Optional: true,
+							ConflictsWith: []string{"storage_disk.image_path",
+								"storage_disk.diff_parent_path",
+								"storage_disk.size"},
+						},
+
+						"diff_parent_path": {
+							Type:          schema.TypeString,
+							Optional:      true,
+							ConflictsWith: []string{"storage_disk.image_url", "storage_disk.image_path"},
+						},
 
 						"size": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-
-						"format": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-
-						"create_option": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:          schema.TypeInt,
+							Optional:      true,
+							Default:       50,
+							ConflictsWith: []string{"storage_disk.image_url", "storage_disk.image_path"},
 						},
 					},
 				},
@@ -133,42 +134,30 @@ func resourceHypervVM() *schema.Resource {
 }
 
 func resourceHypervVMCreate(d *schema.ResourceData, meta interface{}) error {
-
 	var hvDriver = meta.(Driver)
 	var id string
 	var err error
 	var vm VM
 
-	if vm, err = GetVM(d); err != nil {
+	if vm, err = NewVM(d); err != nil {
 		return err
 	}
 
-	if existingID, _ := hvDriver.GetVirtualMachineId(map[string]string{"vmName": vm.Name}); existingID != "" {
+	if existingID, err := hvDriver.GetVirtualMachineId(map[string]string{"vmName": vm.Name}); (existingID != "") || (err != nil) {
+		if err != nil {
+			return err
+		}
 		return errors.New("Cannot create VM: " + vm.Name + ". Already exists!")
 	}
 
 	// Create VM on HV
-	log.Printf("[DEBUG] Creating VM")
-	if id, err = hvDriver.CreateVirtualMachine(vm.Name, "C:\\hyperv", vm.RAMMB, vm.SwitchName, vm.Generation); err != nil {
-		return err
-	}
-
-	// Set CPU Count
-	if err = hvDriver.SetVirtualMachineCpuCount(id, vm.CPU); err != nil {
+	log.Printf("[DEBUG] Creating VM: " + vm.Name)
+	if id, err = hvDriver.CreateVirtualMachine(vm.Name, "C:\\hyperv", vm.RAMMB, vm.Switch, vm.Generation); err != nil {
 		return err
 	}
 
 	// VM Created
 	d.SetId(id)
-
-	// Set VLAN (Applies to all adapters currently connected to the VM)
-	if vm.VLANID != "" {
-		log.Printf("[DEBUG] SETTING VLAN")
-
-		if err = hvDriver.SetVirtualMachineVlanId(id, vm.VLANID); err != nil {
-
-		}
-	}
 
 	// Attach network adapters
 	if vm.NetworkAdapters != nil {
@@ -180,9 +169,37 @@ func resourceHypervVMCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	// Download / Attach VHD
-	log.Printf("[DEBUG] Downloading and attaching boot VHD")
-	if _, err = hvDriver.AttachBootVHD(id, vm.BootVHDUri); err != nil {
+	// Attach storage disks
+	log.Printf("[DEBUG] LETS COUNT THE DISKS LETS COUNT THE DISKS LETS COUNT THE DISKS LETS COUNT THE DISKS LETS COUNT THE DISKS LETS COUNT THE DISKS LETS COUNT THE DISKS ")
+	if vm.StorageDisks != nil {
+		log.Printf("[DEBUG] STORAGE DISKS NOT NULL [DEBUG] STORAGE DISKS NOT NULL [DEBUG] STORAGE DISKS NOT NULL [DEBUG] STORAGE DISKS NOT NULL [DEBUG] STORAGE DISKS NOT NULL [DEBUG] STORAGE DISKS NOT NULL ")
+		for _, d := range vm.StorageDisks {
+
+			log.Printf("[DEBUG] DDISKS ARE REAL")
+
+			if d.DiffParentPath != "" {
+				if _, err = hvDriver.NewDifferencingDisk(id, d.Name, d.DiffParentPath); err != nil {
+					return err
+				}
+			} else if d.ImagePath != "" {
+				if _, err = hvDriver.NewDiskFromImagePath(id, d.Name, d.ImagePath); err != nil {
+					return err
+				}
+			} else if d.ImageURL != "" {
+				if _, err = hvDriver.NewDiskFromImageURL(id, d.Name, d.ImageURL); err != nil {
+					return err
+				}
+			} else {
+				log.Printf("[DEBUG] Creating VHD")
+				if _, err = hvDriver.NewVhd(id, d.Name, d.Size); err != nil {
+					return err
+				}
+			}
+
+		}
+	}
+
+	if err = hvDriver.SetVirtualMachineRemoveNetworkBoot(id); err != nil {
 		return err
 	}
 
@@ -204,7 +221,6 @@ func resourceHypervVMCreate(d *schema.ResourceData, meta interface{}) error {
 		ip, _ := hvDriver.GetVirtualMachineNetworkAdapterAddress(vm.Name)
 		d.SetConnInfo(map[string]string{"host": ip})
 	}
-
 	return resourceHypervVMRead(d, meta)
 }
 

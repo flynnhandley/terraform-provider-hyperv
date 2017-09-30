@@ -1,13 +1,13 @@
 package hyperv
 
 import (
+	"common/psremote/hvremote"
 	"fmt"
 	"log"
 	"runtime"
 	"strconv"
 	"strings"
 
-	"github.com/flynnhandley/psremote/hvremote"
 	"github.com/hashicorp/packer/common/powershell"
 )
 
@@ -44,13 +44,28 @@ func (d *PS5Driver) TestConnectivity() error {
 }
 
 // Returns hash using given algorithm
-func (d *PS5Driver) AttachBootVHD(vmID, source string) (string, error) {
-	return d.hyperv.AttachBootVHD(vmID, source)
+func (d *PS5Driver) NewVhd(vmID, vhdName string, diskSize int64) (string, error) {
+	return d.hyperv.NewVhd(vmID, vhdName, diskSize)
 }
 
 // Returns hash using given algorithm
-func (d *PS5Driver) NewVhd(vmID, vhdName string, diskSize int64) (string, error) {
-	return d.hyperv.NewVhd(vmID, vhdName, diskSize)
+func (d *PS5Driver) NewDiskFromImagePath(vmID, vhdName, imagePath string) (string, error) {
+	return d.hyperv.NewDiskFromImagePath(vmID, vhdName, imagePath)
+}
+
+// Returns hash using given algorithm
+func (d *PS5Driver) SetVirtualMachineRemoveNetworkBoot(vmID string) error {
+	return d.hyperv.SetVirtualMachineRemoveNetworkBoot(vmID)
+}
+
+// Returns hash using given algorithm
+func (d *PS5Driver) NewDifferencingDisk(vmID, vhdName, diffParentPath string) (string, error) {
+	return d.hyperv.NewDifferencingDisk(vmID, vhdName, diffParentPath)
+}
+
+// Returns hash using given algorithm
+func (d *PS5Driver) NewDiskFromImageURL(vmID, vhdName, imageURL string) (string, error) {
+	return d.hyperv.NewDiskFromImageURL(vmID, vhdName, imageURL)
 }
 
 // Sends a file to the remote session
