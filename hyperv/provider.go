@@ -27,19 +27,18 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("HYPERV_PASSWORD", ""),
 			},
 
-			"clustered": {
-				Type:     schema.TypeString,
+			"use_ssl": {
+				Type:     schema.TypeBool,
 				Optional: true,
+				Default:  false,
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"hyperv_virtual_machine": resourceHypervVM(),
 			"hyperv_virtual_switch":  resourceHypervVirtualSwitch(),
 		},
-		DataSourcesMap: map[string]*schema.Resource{
-			"hyperv_virtual_machine_ip": dataSourceHypervVirtualMachineIP(),
-		},
-		ConfigureFunc: providerConfigure,
+		DataSourcesMap: map[string]*schema.Resource{},
+		ConfigureFunc:  providerConfigure,
 	}
 }
 
@@ -49,6 +48,7 @@ func providerConfigure(data *schema.ResourceData) (interface{}, error) {
 		Username:   data.Get("username").(string),
 		Password:   data.Get("password").(string),
 		Hypervisor: data.Get("hypervisor").(string),
+		UseSSL:     data.Get("use_ssl").(bool),
 	}
 
 	drv, err := config.GetDriver()

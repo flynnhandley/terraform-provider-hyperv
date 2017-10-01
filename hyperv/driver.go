@@ -56,13 +56,15 @@ type Driver interface {
 	// Finds the MAC address of the NIC nic0
 	Mac(string) (string, error)
 
-	SetVirtualMachineRemoveNetworkBoot(string) error
-
 	// Finds the IP address of a VM connected that uses DHCP by its MAC address
 	IpAddress(string) (string, error)
 
 	// Finds the hostname for the ip address
 	GetHostName(string) (string, error)
+
+	DisableNetworkBoot(string) error
+
+	SetNetworkAdapterStaticMacAddress(string, string, string) error
 
 	// Finds the IP address of a host adapter connected to switch
 	GetHostAdapterIpAddressForSwitch(string) (string, error)
@@ -71,7 +73,7 @@ type Driver interface {
 	TypeScanCodes(string, string) error
 
 	//Get the ip address for network adaptor
-	GetVirtualMachineNetworkAdapterAddress(string) (string, error)
+	GetVirtualMachineNetworkAdapterAddress(string, string) (string, error)
 
 	//Set the vlan to use for switch
 	SetNetworkAdapterVlanId(string, string) error

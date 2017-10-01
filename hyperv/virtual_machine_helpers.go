@@ -4,24 +4,28 @@ import (
 	"errors"
 	"log"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
 // VM ...
 type VM struct {
-	Name              string
-	SwitchName        string
-	BootVHDUri        string
-	CPU               int
-	Generation        int
-	RAMMB             int64
-	DiskPath          string
-	DisableSecureBoot string
-	Switch            string
-	DisablePXE        string
-	NetworkAdapters   []NetworkAdapter
-	StorageDisks      []Disk
+	Name               string
+	SwitchName         string
+	BootVHDUri         string
+	MAC                string
+	Processors         int
+	Generation         int
+	RAMMB              int64
+	DisableNetworkBoot bool
+	Path               string
+	DisableSecureBoot  string
+	Switch             string
+	DisablePXE         string
+	NetworkAdapters    []NetworkAdapter
+	StorageDisks       []Disk
 }
 
 // NetworkAdapter ...
@@ -56,12 +60,18 @@ type Disk struct {
 func NewVM(d *schema.ResourceData) (VM, error) {
 
 	vm := VM{
-		Name:            d.Get("vm_name").(string),
-		RAMMB:           int64(d.Get("ram_mb").(int)),
-		Generation:      d.Get("generation").(int),
-		CPU:             d.Get("cpu").(int),
-		NetworkAdapters: GetNetworkAdapters(d),
-		Switch:          d.Get("switch").(string),
+		Name:               d.Get("name").(string),
+		RAMMB:              int64(d.Get("ram").(int)),
+		Generation:         d.Get("generation").(int),
+		Processors:         d.Get("processors").(int),
+		Path:               d.Get("path").(string),
+		NetworkAdapters:    GetNetworkAdapters(d),
+		Switch:             d.Get("switch").(string),
+		DisableNetworkBoot: d.Get("disable_network_boot").(bool),
+	}
+
+	if val, ok := d.GetOk("mac"); ok {
+		vm.MAC = val.(string)
 	}
 
 	disks, err := GetDisks(d)
@@ -153,4 +163,41 @@ func GetDisks(d *schema.ResourceData) ([]Disk, error) {
 		return disks, nil
 	}
 	return nil, nil
+}
+
+func WaitForIp(d *schema.ResourceData, hvDriver Driver, vm VM) error {
+
+	if val, ok := d.GetOk("wait_for_ip"); ok {
+		log.Printf("[DEBUG] Provision set, waiting for IP address")
+		for _, v := range val.([]interface{}) {
+			var ip string
+			var index = 0
+			var err error
+			wfIP := v.(map[string]interface{})
+			adapterName := wfIP["adapter_name"].(string)
+			timeOut := wfIP["timeout"].(int)
+
+			for ip, err = hvDriver.GetVirtualMachineNetworkAdapterAddress(vm.Name, adapterName); (ip == "") || strings.HasPrefix(ip, "169") || strings.HasPrefix(ip, "fe80"); {
+
+				if err != nil {
+					return err
+				}
+
+				log.Printf("[DEBUG] Waiting for IP" + adapterName)
+				log.Printf("[DEBUG] IP is:" + ip)
+				log.Printf("[DEBUG] adapter name is:" + adapterName)
+
+				if index > (timeOut * 6) {
+					return errors.New("could not find IP address before timeout expires, minutes: " + strconv.Itoa(timeOut))
+				}
+
+				time.Sleep(time.Second * 10)
+
+				ip, _ = hvDriver.GetVirtualMachineNetworkAdapterAddress(vm.Name, adapterName)
+				index++
+			}
+			d.SetConnInfo(map[string]string{"host": ip})
+		}
+	}
+	return nil
 }

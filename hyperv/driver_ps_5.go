@@ -13,11 +13,11 @@ import (
 
 // PS5Driver because I have to
 type PS5Driver struct {
-	hyperv *hvremote.HyperVCmd
+	hyperv *hvremote.HypervRemote
 }
 
 // NewPS5Driver because I have to
-func NewPS5Driver(userName, password, computerName string) (Driver, error) {
+func NewPS5Driver(userName, password, computerName string, useSSL bool) (Driver, error) {
 	appliesTo := "Applies to Windows 8.1, Windows PowerShell 4.0, Windows Server 2012 R2 only"
 
 	// Check this is Windows
@@ -27,7 +27,7 @@ func NewPS5Driver(userName, password, computerName string) (Driver, error) {
 	}
 
 	ps4Driver := &PS5Driver{}
-	var hv, _ = hvremote.NewHyperVCmd(userName, password, computerName)
+	var hv, _ = hvremote.NewHypervRemote(userName, password, computerName, useSSL)
 	ps4Driver.hyperv = hv
 
 	return ps4Driver, nil
@@ -54,8 +54,8 @@ func (d *PS5Driver) NewDiskFromImagePath(vmID, vhdName, imagePath string) (strin
 }
 
 // Returns hash using given algorithm
-func (d *PS5Driver) SetVirtualMachineRemoveNetworkBoot(vmID string) error {
-	return d.hyperv.SetVirtualMachineRemoveNetworkBoot(vmID)
+func (d *PS5Driver) SetNetworkAdapterStaticMacAddress(vmName, adapterName, mac string) error {
+	return d.hyperv.SetNetworkAdapterStaticMacAddress(vmName, adapterName, mac)
 }
 
 // Returns hash using given algorithm
@@ -66,6 +66,11 @@ func (d *PS5Driver) NewDifferencingDisk(vmID, vhdName, diffParentPath string) (s
 // Returns hash using given algorithm
 func (d *PS5Driver) NewDiskFromImageURL(vmID, vhdName, imageURL string) (string, error) {
 	return d.hyperv.NewDiskFromImageURL(vmID, vhdName, imageURL)
+}
+
+// Returns hash using given algorithm
+func (d *PS5Driver) DisableNetworkBoot(vmID string) error {
+	return d.hyperv.DisableNetworkBoot(vmID)
 }
 
 // Sends a file to the remote session
@@ -184,8 +189,8 @@ func (d *PS5Driver) Hash(path, algorithm string) (string, error) {
 }
 
 // Get network adapter address
-func (d *PS5Driver) GetVirtualMachineNetworkAdapterAddress(vmName string) (string, error) {
-	return d.hyperv.GetVirtualMachineNetworkAdapterAddress(vmName)
+func (d *PS5Driver) GetVirtualMachineNetworkAdapterAddress(vmName, adapterName string) (string, error) {
+	return d.hyperv.GetVirtualMachineNetworkAdapterAddress(vmName, adapterName)
 }
 
 //Set the vlan to use for switch

@@ -47,7 +47,7 @@ resource "hyperv_virtual_switch" "internet" {
 
 resource "hyperv_virtual_machine" "web" {
   vm_name         = "web"
-  boot_vhd_uri    = "http://address.to.repository/server2012r2-1.2.3.vhdx",
+
   switch_name     = "${hyperv_virtual_switch.internet.name}"
   cpu             = 2,
   ram_mb          = 1024,
@@ -71,7 +71,6 @@ resource "hyperv_virtual_machine" "web" {
 
 resource "hyperv_virtual_machine" "db" {
   vm_name         = "db"
-  boot_vhd_uri    = "http://address.to.repository/server2012r2-1.2.3.vhdx",
   switch_name     = "${hyperv_virtual_switch.db.name}"
   cpu             = 2,
   ram_mb          = 1024,

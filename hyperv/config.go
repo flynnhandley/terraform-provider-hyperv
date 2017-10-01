@@ -5,14 +5,14 @@ type Config struct {
 	Hypervisor string
 	Username   string
 	Password   string
-	Clustered  bool
+	UseSSL     bool
 	Driver     Driver
 }
 
-// GetDriver returns a new client for accessing PowerDNS
+// GetDriver returns a new client for accessing Hypev
 func (c *Config) GetDriver() (Driver, error) {
 
-	driver, err := NewPS5Driver(c.Username, c.Password, c.Hypervisor)
+	driver, err := NewPS5Driver(c.Username, c.Password, c.Hypervisor, c.UseSSL)
 	if err != nil {
 		return nil, err
 	}
