@@ -29,7 +29,7 @@ resource "hyperv_virtual_switch" "application_switch" {
 
 resource "hyperv_virtual_machine" "web" {
   vm_name               = "web"
-  cpu                   = 2
+  processors            = 2
   ram_mb                = 1024
   switch                = "external_switch"
   disable_network_boot  = true
@@ -116,7 +116,7 @@ The following attributes are exported:
 ```hcl
 resource "hyperv_virtual_machine" "db" {
   vm_name               = "db"
-  cpu                   = 4
+  processors            = 4
   ram_mb                = 4096
   switch                = "external_switch"
   disable_network_boot  = true
@@ -147,7 +147,7 @@ In order for this to work, you will need to provide the VM with either a static 
 ```hcl
 resource "hyperv_virtual_machine" "db" {
   vm_name               = "db"
-  cpu                   = 4
+  processors            = 4
   ram_mb                = 4096
   switch                = "external_switch"
   disable_network_boot  = true
