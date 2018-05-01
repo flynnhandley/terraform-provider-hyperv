@@ -1,7 +1,7 @@
 package hyperv
 
 import (
-	"common/psremote/hvremote"
+	"github.com/flynnhandley/psremote/hvremote"
 	"fmt"
 	"log"
 	"runtime"
