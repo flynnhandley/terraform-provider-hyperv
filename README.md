@@ -28,9 +28,9 @@ resource "hyperv_virtual_switch" "application_switch" {
 }
 
 resource "hyperv_virtual_machine" "web" {
-  vm_name               = "web"
+  name                  = "web"
   processors            = 2
-  ram_mb                = 1024
+  ram                   = 1024
   switch                = "external_switch"
   disable_network_boot  = true
   path                  = "C:\\ClusterStorage\\VMs"
@@ -47,9 +47,9 @@ resource "hyperv_virtual_machine" "web" {
 }
 
 resource "hyperv_virtual_machine" "db" {
-  vm_name               = "db"
-  cpu                   = 4
-  ram_mb                = 4096
+  name                  = "db"
+  processors            = 4
+  ram                   = 4096
   switch                = "external_switch"
   disable_network_boot  = true
   path                  = "C:\\ClusterStorage\\VMs"
@@ -115,9 +115,9 @@ The following attributes are exported:
 
 ```hcl
 resource "hyperv_virtual_machine" "db" {
-  vm_name               = "db"
+  name                  = "db"
   processors            = 4
-  ram_mb                = 4096
+  ram                   = 4096
   switch                = "external_switch"
   disable_network_boot  = true
   path                  = "C:\\ClusterStorage\\VMs"
@@ -146,9 +146,9 @@ In order for this to work, you will need to provide the VM with either a static 
 
 ```hcl
 resource "hyperv_virtual_machine" "db" {
-  vm_name               = "db"
+  name                  = "db"
   processors            = 4
-  ram_mb                = 4096
+  ram                   = 4096
   switch                = "external_switch"
   disable_network_boot  = true
   path                  = "C:\\ClusterStorage\\VMs"
