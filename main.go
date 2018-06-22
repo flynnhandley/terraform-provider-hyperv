@@ -1,8 +1,7 @@
 package main
 
 import (
-	"terraform-provider-hyperv/hyperv"
-
+	"github.com/flynnhandley/hashicorp-plugins/hyperv"
 	"github.com/hashicorp/terraform/plugin"
 )
 

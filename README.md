@@ -29,10 +29,12 @@ resource "hyperv_virtual_switch" "application_switch" {
 
 resource "hyperv_virtual_machine" "web" {
   vm_name               = "web"
-  processors            = 2
-  ram_mb                = 1024
+  cpu                   = 2
+  ram                   = 1024
   switch                = "external_switch"
   disable_network_boot  = true
+  enable_secure_boot    = true
+  secure_boot_template  = "MicrosoftWindows"
   path                  = "C:\\ClusterStorage\\VMs"
 
   network_adapter {
@@ -49,9 +51,10 @@ resource "hyperv_virtual_machine" "web" {
 resource "hyperv_virtual_machine" "db" {
   vm_name               = "db"
   cpu                   = 4
-  ram_mb                = 4096
+  ram                   = 4096
   switch                = "external_switch"
   disable_network_boot  = true
+  enable_secure_boot    = true
   path                  = "C:\\ClusterStorage\\VMs"
 
   network_adapter {
@@ -73,11 +76,13 @@ The following arguments are supported:
 * `name` - (Required) The name of the virtual machine resource.
 * `switch` - (Required) The name of the virtual switch that the virtual machine will connect to.
 * `path` - (Optional) The directory to store the files for the new virtual machine, defaults to `C:\HyperV`.
-* `processors` - (Optional) The number of Virtual Processors to assign to the virtual machine, defaults to `2`.
+* `cpu` - (Optional) The number of Virtual Processors to assign to the virtual machine, defaults to `2`.
 * `vlan_id` - (Optional) Specifies the virtual LAN identifier of the virtual machine network adapter.
 * `mac` - (Optional) The mac address of the virtual machines network adapter.
 * `disable_network_boot` - (Optional) Removes network devices from the BIOS boot sequence, this saves time when multiple adapters are used.
-* `disable_secure_boot` - (Optional) Specifies whether to disable secure boot.
+* `enable_secure_boot` - (Optional) Specifies whether to enable secure boot.
+* `secure_boot_template` - (Optional) If Secure Boot is enable, selects the correct template to use (Windows 10/Server 2016 only).
+* `enable_dynamic_memory` - (Optional) Specifies whether to enable Dynamic Memory.
 * `generation` - (Optional) Specifies the generation, as an integer, for the virtual machine. The values that are valid are 1 and 2, defaults to `2`
 * `ram` - (Optional) An integer representing the amount of RAM allocated to the VM in MB, defaults to `2048`
 * `wait_for_ip` - (Optional) Polls the HyperV host for the guest VM's IP address. If an IP address is detected, the host property of the provisioners connection is set. The wait_for_ip block is documented below.

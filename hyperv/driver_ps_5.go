@@ -1,12 +1,13 @@
 package hyperv
 
 import (
-	"common/psremote/hvremote"
 	"fmt"
 	"log"
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/flynnhandley/psremote/hvremote"
 
 	"github.com/hashicorp/packer/common/powershell"
 )
@@ -144,8 +145,8 @@ func (d *PS5Driver) Mac(vmName string) (string, error) {
 }
 
 // Get ip address for mac address.
-func (d *PS5Driver) IpAddress(mac string) (string, error) {
-	res, err := d.hyperv.IpAddress(mac)
+func (d *PS5Driver) IPAddress(mac string) (string, error) {
+	res, err := d.hyperv.IPAddress(mac)
 
 	if err != nil {
 		return res, err
@@ -164,8 +165,8 @@ func (d *PS5Driver) GetHostName(ip string) (string, error) {
 }
 
 // Finds the IP address of a host adapter connected to switch
-func (d *PS5Driver) GetHostAdapterIpAddressForSwitch(switchName string) (string, error) {
-	res, err := d.hyperv.GetHostAdapterIpAddressForSwitch(switchName)
+func (d *PS5Driver) GetHostAdapterIPAddressForSwitch(switchName string) (string, error) {
+	res, err := d.hyperv.GetHostAdapterIPAddressForSwitch(switchName)
 
 	if err != nil {
 		return res, err
@@ -194,13 +195,13 @@ func (d *PS5Driver) GetVirtualMachineNetworkAdapterAddress(vmName, adapterName s
 }
 
 //Set the vlan to use for switch
-func (d *PS5Driver) SetNetworkAdapterVlanId(switchName string, vlanId string) error {
-	return d.hyperv.SetNetworkAdapterVlanId(switchName, vlanId)
+func (d *PS5Driver) SetNetworkAdapterVlanID(switchName string, vlanID string) error {
+	return d.hyperv.SetNetworkAdapterVlanID(switchName, vlanID)
 }
 
 //Set the vlan to use for machine
-func (d *PS5Driver) SetVirtualMachineVlanId(vmName string, vlanId string) error {
-	return d.hyperv.SetVirtualMachineVlanId(vmName, vlanId)
+func (d *PS5Driver) SetVirtualMachineVlanID(vmName string, vlanID int) error {
+	return d.hyperv.SetVirtualMachineVlanID(vmName, vlanID)
 }
 
 func (d *PS5Driver) UntagVirtualMachineNetworkAdapterVlan(vmName string, switchName string) error {
@@ -215,12 +216,12 @@ func (d *PS5Driver) GetVirtualMachineSwitchName(vmName string) (string, error) {
 	return d.hyperv.GetVirtualMachineSwitchName(vmName)
 }
 
-func (d *PS5Driver) GetVirtualMachineId(params map[string]string) (string, error) {
-	return d.hyperv.GetVirtualMachineId(params)
+func (d *PS5Driver) GetVirtualMachineID(params map[string]string) (string, error) {
+	return d.hyperv.GetVirtualMachineID(params)
 }
 
-func (d *PS5Driver) GetVirtualSwitchId(params map[string]string) (string, error) {
-	return d.hyperv.GetVirtualSwitchId(params)
+func (d *PS5Driver) GetVirtualSwitchID(params map[string]string) (string, error) {
+	return d.hyperv.GetVirtualSwitchID(params)
 }
 
 func (d *PS5Driver) AddVMNetworkAdapter(vmId, name, switchName, vlanId string) error {
@@ -243,12 +244,12 @@ func (d *PS5Driver) CreateVirtualMachine(vmName string, path string, ram int64, 
 	return d.hyperv.CreateVirtualMachine(vmName, path, ram, switchName, generation)
 }
 
-func (d *PS5Driver) DeleteVirtualMachine(vmId string) error {
-	return d.hyperv.DeleteVirtualMachine(vmId)
+func (d *PS5Driver) DeleteVirtualMachine(vmID string) error {
+	return d.hyperv.DeleteVirtualMachine(vmID)
 }
 
-func (d *PS5Driver) SetVirtualMachineCpuCount(vmId string, cpu int) error {
-	return d.hyperv.SetVirtualMachineCpuCount(vmId, cpu)
+func (d *PS5Driver) SetVirtualMachineCPUCount(vmID string, cpu int) error {
+	return d.hyperv.SetVirtualMachineCPUCount(vmID, cpu)
 }
 
 func (d *PS5Driver) SetVirtualMachineMacSpoofing(vmName string, enable bool) error {
@@ -259,8 +260,8 @@ func (d *PS5Driver) SetVirtualMachineDynamicMemory(vmName string, enable bool) e
 	return d.hyperv.SetVirtualMachineDynamicMemory(vmName, enable)
 }
 
-func (d *PS5Driver) SetVirtualMachineSecureBoot(vmName string, enable bool) error {
-	return d.hyperv.SetVirtualMachineSecureBoot(vmName, enable)
+func (d *PS5Driver) SetVirtualMachineSecureBoot(vmName string, enable bool, template string) error {
+	return d.hyperv.SetVirtualMachineSecureBoot(vmName, enable, template)
 }
 
 func (d *PS5Driver) SetVirtualMachineVirtualizationExtensions(vmName string, enable bool) error {

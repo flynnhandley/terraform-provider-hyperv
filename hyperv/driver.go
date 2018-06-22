@@ -57,7 +57,7 @@ type Driver interface {
 	Mac(string) (string, error)
 
 	// Finds the IP address of a VM connected that uses DHCP by its MAC address
-	IpAddress(string) (string, error)
+	IPAddress(string) (string, error)
 
 	// Finds the hostname for the ip address
 	GetHostName(string) (string, error)
@@ -67,7 +67,7 @@ type Driver interface {
 	SetNetworkAdapterStaticMacAddress(string, string, string) error
 
 	// Finds the IP address of a host adapter connected to switch
-	GetHostAdapterIpAddressForSwitch(string) (string, error)
+	GetHostAdapterIPAddressForSwitch(string) (string, error)
 
 	// Type scan codes to virtual keyboard of vm
 	TypeScanCodes(string, string) error
@@ -76,16 +76,16 @@ type Driver interface {
 	GetVirtualMachineNetworkAdapterAddress(string, string) (string, error)
 
 	//Set the vlan to use for switch
-	SetNetworkAdapterVlanId(string, string) error
+	SetNetworkAdapterVlanID(string, string) error
 
 	//Set the vlan to use for machine
-	SetVirtualMachineVlanId(string, string) error
+	SetVirtualMachineVlanID(string, int) error
 
 	UntagVirtualMachineNetworkAdapterVlan(string, string) error
 
 	CreateExternalVirtualSwitch(string, string) error
 
-	GetVirtualSwitchId(map[string]string) (string, error)
+	GetVirtualSwitchID(map[string]string) (string, error)
 
 	GetVirtualMachineSwitchName(string) (string, error)
 
@@ -101,15 +101,15 @@ type Driver interface {
 
 	DeleteVirtualMachine(string) error
 
-	GetVirtualMachineId(map[string]string) (string, error)
+	GetVirtualMachineID(map[string]string) (string, error)
 
-	SetVirtualMachineCpuCount(string, int) error
+	SetVirtualMachineCPUCount(string, int) error
 
 	SetVirtualMachineMacSpoofing(string, bool) error
 
 	SetVirtualMachineDynamicMemory(string, bool) error
 
-	SetVirtualMachineSecureBoot(string, bool) error
+	SetVirtualMachineSecureBoot(string, bool, string) error
 
 	SetVirtualMachineVirtualizationExtensions(string, bool) error
 

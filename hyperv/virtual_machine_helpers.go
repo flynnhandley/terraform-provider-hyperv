@@ -12,20 +12,23 @@ import (
 
 // VM ...
 type VM struct {
-	Name               string
-	SwitchName         string
-	BootVHDUri         string
-	MAC                string
-	Processors         int
-	Generation         int
-	RAMMB              int64
-	DisableNetworkBoot bool
-	Path               string
-	DisableSecureBoot  string
-	Switch             string
-	DisablePXE         string
-	NetworkAdapters    []NetworkAdapter
-	StorageDisks       []Disk
+	Name                string
+	SwitchName          string
+	BootVHDUri          string
+	MAC                 string
+	CPU                 int
+	Generation          int
+	RAMMB               int64
+	Path                string
+	Switch              string
+	DisablePXE          string
+	VlanID              int
+	EnableSecureBoot    bool
+	SecureBootTemplate  string
+	DisableNetworkBoot  bool
+	EnableDynamicMemory bool
+	NetworkAdapters     []NetworkAdapter
+	StorageDisks        []Disk
 }
 
 // NetworkAdapter ...
@@ -33,6 +36,7 @@ type NetworkAdapter struct {
 	Name       string
 	SwitchName string
 	VlanID     string
+	MAC        string
 }
 
 // Switch ..
@@ -60,14 +64,18 @@ type Disk struct {
 func NewVM(d *schema.ResourceData) (VM, error) {
 
 	vm := VM{
-		Name:               d.Get("name").(string),
-		RAMMB:              int64(d.Get("ram").(int)),
-		Generation:         d.Get("generation").(int),
-		Processors:         d.Get("processors").(int),
-		Path:               d.Get("path").(string),
-		NetworkAdapters:    GetNetworkAdapters(d),
-		Switch:             d.Get("switch").(string),
-		DisableNetworkBoot: d.Get("disable_network_boot").(bool),
+		Name:                d.Get("name").(string),
+		RAMMB:               int64(d.Get("ram").(int)),
+		Generation:          d.Get("generation").(int),
+		CPU:                 d.Get("cpu").(int),
+		Path:                d.Get("path").(string),
+		NetworkAdapters:     GetNetworkAdapters(d),
+		Switch:              d.Get("switch").(string),
+		VlanID:              d.Get("vlan_id").(int),
+		DisableNetworkBoot:  d.Get("disable_network_boot").(bool),
+		EnableSecureBoot:    d.Get("enable_secure_boot").(bool),
+		SecureBootTemplate:  d.Get("secure_boot_template").(string),
+		EnableDynamicMemory: d.Get("enable_dynamic_memory").(bool),
 	}
 
 	if val, ok := d.GetOk("mac"); ok {
@@ -75,7 +83,7 @@ func NewVM(d *schema.ResourceData) (VM, error) {
 	}
 
 	disks, err := GetDisks(d)
-	log.Printf("NEW VM NEW VM NEW VM NEW VM NEW VM NEW VM NEW VM NEW VM ")
+	log.Printf("NEW VM")
 	vm.StorageDisks = disks
 
 	return vm, err
@@ -117,9 +125,9 @@ func GetNetworkAdapters(d *schema.ResourceData) []NetworkAdapter {
 
 // GetDisks ..
 func GetDisks(d *schema.ResourceData) ([]Disk, error) {
-	log.Printf("GER DISKS GER DISKS GER DISKS GER DISKS GER DISKS GER DISKS GER DISKS GER DISKS GER DISKS ")
+	log.Printf("GET DISKS")
 	if vL, ok := d.GetOk("storage_disk"); ok {
-		log.Printf("ok ok ok ok OK OK OK OK OK")
+		log.Printf("OK")
 		var disks []Disk
 		for _, v := range vL.([]interface{}) {
 			disk := v.(map[string]interface{})
@@ -165,7 +173,7 @@ func GetDisks(d *schema.ResourceData) ([]Disk, error) {
 	return nil, nil
 }
 
-func WaitForIp(d *schema.ResourceData, hvDriver Driver, vm VM) error {
+func WaitForIP(d *schema.ResourceData, hvDriver Driver, vm VM) error {
 
 	if val, ok := d.GetOk("wait_for_ip"); ok {
 		log.Printf("[DEBUG] Provision set, waiting for IP address")
